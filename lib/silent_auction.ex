@@ -1,0 +1,2 @@
+defmodule SilentAuction do
+end
