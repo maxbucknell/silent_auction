@@ -16,7 +16,7 @@ defmodule SilentAuction.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :crypto],
       mod: {SilentAuction.Application, []}
     ]
   end
@@ -30,7 +30,10 @@ defmodule SilentAuction.MixProject do
       {:absinthe, "~> 1.7.8"},
       {:absinthe_plug, "~> 1.5.8"},
       {:ecto_sql, "~> 3.12.1"},
-      {:postgrex, "~> 0.19.2"}
+      {:postgrex, "~> 0.19.2"},
+      {:dataloader, "~> 2.0.1"},
+      {:guardian, "~> 2.3.2"},
+      {:elixir_uuid, "~> 1.2.1"}
     ]
   end
 
