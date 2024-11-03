@@ -10,7 +10,7 @@ defmodule SilentAuction.Api.Auth do
     {status, resp} =
       with {:ok, recipient} <- parse_recipient(conn.body_params),
            {:ok, challenge_id} <- Server.challenge(Server, recipient) do
-        {201, %{"challenge_id" => Base.encode16(challenge_id, case: :lower)}}
+        {201, %{"challenge_id" => challenge_id}}
       else
         {:error, :unknown_error} -> {500, %{}}
         {:error, reason} -> {400, %{"error" => reason}}
@@ -33,7 +33,6 @@ defmodule SilentAuction.Api.Auth do
 
     {status, resp} =
       with {:ok, {challenge_id, code}} <- parse_verification(conn.body_params),
-           {:ok, challenge_id} <- Base.decode16(challenge_id, case: :lower),
            {:ok, token} <- Server.verify(Server, challenge_id, code) do
         {201, %{"token" => token}}
       else

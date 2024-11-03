@@ -56,10 +56,10 @@ defmodule SilentAuction.Api.Auth.Server do
 
     with {:ok, {type, identity}} <- Sender.validate_recipient(sender, recipient),
          code <- generate_code(),
-         challenge_id <- :crypto.hash(:sha256, identity),
-         _ <- :ets.insert(table, {challenge_id, {type, identity}, code}),
+         {hash, uuid} <- generate_challenge_id(identity),
+         _ <- :ets.insert(table, {hash, uuid, type, identity, code}),
          :ok <- Sender.send_code(sender, {type, identity}, code) do
-      {:reply, {:ok, challenge_id}, state}
+      {:reply, {:ok, hash <> "/" <> uuid}, state}
     else
       {:error, reason} -> {:reply, {:error, reason}, state}
       _ -> {:reply, {:error, :unknown_error}, state}
@@ -70,14 +70,39 @@ defmodule SilentAuction.Api.Auth.Server do
   def handle_call({:verify, challenge_id, code}, _from, state) do
     %{table: table} = state
 
-    with [{^challenge_id, {_type, identity}, ^code}] <- :ets.lookup(table, challenge_id),
+    with {:ok, {hash, uuid}} <- parse_challenge_id(challenge_id),
+         {:ok, {_type, identity}} <- lookup_challenge(table, hash, uuid, code),
          {:ok, account} <- Repo.Account.retrieve_by_phone(identity),
          {:ok, token, _} <- Guardian.encode_and_sign(account, %{}, ttl: {4, :hours}) do
       {:reply, {:ok, token}, state}
     else
-      [] -> {:reply, {:error, :auth_not_started}, state}
-      [{^challenge_id, _, _}] -> {:reply, {:error, :invalid_code}, state}
-      _ -> {:reply, {:error, :unknown_error}, state}
+      {:error, reason} -> {:reply, {:error, reason}, state}
+    end
+  end
+
+  defp generate_challenge_id(identity) do
+    hash =
+      :crypto.hash(:sha256, identity)
+      |> binary_slice(0, 16)
+      |> Base.encode16(case: :lower)
+
+    uuid = UUID.uuid4(:slug)
+
+    {hash, uuid}
+  end
+
+  defp parse_challenge_id(challenge_id) do
+    case String.split(challenge_id, "/") do
+      [hash, uuid] -> {:ok, {hash, uuid}}
+      _ -> {:error, :invalid_challenge_id}
+    end
+  end
+
+  def lookup_challenge(table, hash, uuid, code) do
+    case :ets.lookup(table, hash) do
+      [{^hash, ^uuid, type, identity, ^code}] -> {:ok, {type, identity}}
+      [{^hash, _, _, _, _}] -> {:error, :invalid_code}
+      [] -> {:error, :auth_not_started}
     end
   end
 

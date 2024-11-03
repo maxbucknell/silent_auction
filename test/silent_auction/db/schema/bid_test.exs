@@ -8,7 +8,6 @@ defmodule SilentAuction.DB.Schema.BidTest do
 
   setup do
     account = %Account{
-      public_id: "pikachu",
       phone: "61491570006",
       name: "Test Userson"
     }

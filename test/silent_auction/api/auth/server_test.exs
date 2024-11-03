@@ -1,12 +1,31 @@
 defmodule SilentAuction.Api.Auth.ServerTest do
+  alias SilentAuction.DB.Repo
   alias SilentAuction.Api.Auth.Server
   alias SilentAuction.Api.Auth.Sender
 
-  use ExUnit.Case
+  alias SilentAuction.DB.Schema.Colour
+
+  use SilentAuction.DBCase
 
   setup do
     sender = start_supervised!({Sender, sender: Sender.MapSender})
     server = start_supervised!({Server, sender: sender})
+
+    colour = %Colour{}
+    red = %{name: "red", hex_code: "#ab1717"}
+    changeset = Colour.changeset(colour, red)
+
+    {:ok, _} = Repo.insert(changeset)
+
+    green = %{name: "green", hex_code: "#17ab17"}
+    changeset = Colour.changeset(colour, green)
+
+    {:ok, _} = Repo.insert(changeset)
+
+    blue = %{name: "blue", hex_code: "#1717ab"}
+    changeset = Colour.changeset(colour, blue)
+
+    {:ok, _} = Repo.insert(changeset)
 
     %{server: server, sender: sender}
   end
@@ -46,7 +65,8 @@ defmodule SilentAuction.Api.Auth.ServerTest do
   test "early verification", state do
     %{server: server} = state
 
-    assert {:error, :auth_not_started} = Server.verify(server, UUID.uuid4(:raw), "XXXXXX")
+    assert {:error, :invalid_challenge_id} = Server.verify(server, UUID.uuid4(:slug), "XXXXXX")
+    assert {:error, :auth_not_started} = Server.verify(server, "a/b", "XXXXXX")
   end
 
   test "old code", state do

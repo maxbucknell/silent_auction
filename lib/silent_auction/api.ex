@@ -10,7 +10,6 @@ defmodule SilentAuction.Api do
   )
 
   plug(:match)
-  plug(:dispatch)
 
   plug(Guardian.Plug.Pipeline,
     otp_app: :silent_auction,
@@ -24,6 +23,10 @@ defmodule SilentAuction.Api do
 
   forward("/auth", to: SilentAuction.Api.Auth)
 
+  plug(:add_resource_to_context)
+
+  plug(:dispatch)
+
   forward("/graphql",
     to: Absinthe.Plug,
     init_opts: [schema: SilentAuction.Api.GraphQL.Schema]
@@ -34,5 +37,12 @@ defmodule SilentAuction.Api do
       to: Absinthe.Plug.GraphiQL,
       init_opts: [schema: SilentAuction.Api.GraphQL.Schema]
     )
+  end
+
+  defp add_resource_to_context(conn, _opts) do
+    case Guardian.Plug.current_resource(conn) do
+      {account} -> Absinthe.Plug.assign_context(conn, :account, account)
+      _ -> conn
+    end
   end
 end

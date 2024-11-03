@@ -6,8 +6,7 @@ defmodule SilentAuction.DB.Schema.AccountTest do
 
   test "can create an account" do
     account = %Account{
-      phone: "61491570006",
-      name: "Test Userson"
+      phone: "61491570006"
     }
 
     changeset = Account.changeset(account)
@@ -16,9 +15,7 @@ defmodule SilentAuction.DB.Schema.AccountTest do
   end
 
   test "phone is required" do
-    account = %Account{
-      name: "Test Userson"
-    }
+    account = %Account{}
 
     changeset = Account.changeset(account)
 
@@ -26,9 +23,7 @@ defmodule SilentAuction.DB.Schema.AccountTest do
   end
 
   test "phone is not longer than 15 digits" do
-    account = %Account{
-      name: "Test Userson"
-    }
+    account = %Account{}
 
     changeset = Account.changeset(account, %{phone: "111111111111111"})
 
@@ -40,9 +35,7 @@ defmodule SilentAuction.DB.Schema.AccountTest do
   end
 
   test "phone may only contain digits" do
-    account = %Account{
-      name: "Test Userson"
-    }
+    account = %Account{}
 
     changeset = Account.changeset(account, %{phone: "1234567890"})
 
@@ -51,15 +44,5 @@ defmodule SilentAuction.DB.Schema.AccountTest do
     changeset = Account.changeset(account, %{phone: "+1234567890"})
 
     assert !changeset.valid?
-  end
-
-  test "name is required" do
-    account = %Account{
-      phone: "61491570006"
-    }
-
-    changeset = Account.changeset(account)
-
-    assert {:error, _} = Repo.insert(changeset)
   end
 end
