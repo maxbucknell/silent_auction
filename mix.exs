@@ -48,6 +48,7 @@ defmodule SilentAuction.MixProject do
   defp aliases do
     [
       test: [
+        "ecto.drop --quiet",
         "ecto.create --quiet",
         "ecto.migrate --quiet",
         "test"

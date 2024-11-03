@@ -22,8 +22,8 @@ defmodule Sender.LogSender do
   end
 
   @impl GenServer
-  def handle_call({:send_code, recipient, code}, _from, state) do
-    Logger.log(state.level, "Authentication code for #{recipient}: #{code}.")
+  def handle_call({:send_code, {type, identity}, code}, _from, state) do
+    Logger.log(state.level, "Authentication code for #{identity} (#{type}): #{code}.")
 
     {:reply, :ok, state}
   end

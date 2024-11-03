@@ -12,6 +12,18 @@ defmodule SilentAuction.Api do
   plug(:match)
   plug(:dispatch)
 
+  plug(Guardian.Plug.Pipeline,
+    otp_app: :silent_auction,
+    error_handler: SilentAuction.Api.Auth.Guardian.ErrorHandler,
+    module: SilentAuction.Api.Auth.Guardian
+  )
+
+  plug(Guardian.Plug.VerifyHeader, claims: %{"typ" => "access"})
+
+  plug(Guardian.Plug.LoadResource, allow_blank: true)
+
+  forward("/auth", to: SilentAuction.Api.Auth)
+
   forward("/graphql",
     to: Absinthe.Plug,
     init_opts: [schema: SilentAuction.Api.GraphQL.Schema]

@@ -17,10 +17,9 @@ defmodule SilentAuction.Application do
     children = [
       {Bandit, plug: SilentAuction.Api},
       SilentAuction.DB.Repo,
-      {
-        SilentAuction.Api.Auth.Sender,
-        auth_sender_arg ++ [name: SilentAuction.Api.Auth.Sender]
-      }
+      {SilentAuction.Api.Auth.Sender, auth_sender_arg ++ [name: SilentAuction.Api.Auth.Sender]},
+      {SilentAuction.Api.Auth.Server,
+       sender: SilentAuction.Api.Auth.Sender, name: SilentAuction.Api.Auth.Server}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

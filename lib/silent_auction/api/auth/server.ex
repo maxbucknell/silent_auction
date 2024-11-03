@@ -1,10 +1,15 @@
 defmodule SilentAuction.Api.Auth.Server do
   require Logger
+
   alias SilentAuction.Api.Auth.Sender
+  alias SilentAuction.Api.Auth.Guardian
+  alias SilentAuction.DB.Repo
+
   use GenServer
 
   def start_link(config) do
-    GenServer.start_link(__MODULE__, config)
+    name = Keyword.get(config, :name)
+    GenServer.start_link(__MODULE__, config, name: name)
   end
 
   @doc """
@@ -65,8 +70,10 @@ defmodule SilentAuction.Api.Auth.Server do
   def handle_call({:verify, challenge_id, code}, _from, state) do
     %{table: table} = state
 
-    with [{^challenge_id, recipient, ^code}] <- :ets.lookup(table, challenge_id) do
-      {:reply, {:ok, recipient}, state}
+    with [{^challenge_id, {_type, identity}, ^code}] <- :ets.lookup(table, challenge_id),
+         {:ok, account} <- Repo.Account.retrieve_by_phone(identity),
+         {:ok, token, _} <- Guardian.encode_and_sign(account, %{}, ttl: {4, :hours}) do
+      {:reply, {:ok, token}, state}
     else
       [] -> {:reply, {:error, :auth_not_started}, state}
       [{^challenge_id, _, _}] -> {:reply, {:error, :invalid_code}, state}
