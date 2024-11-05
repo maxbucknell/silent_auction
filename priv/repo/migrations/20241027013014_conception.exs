@@ -35,7 +35,7 @@ defmodule SilentAuction.DB.Repo.Migrations.Conception do
     create table("bids") do
       add :amount, :integer, null: false, comment: "Value of bid"
 
-      add :made_at, :utc_datetime, null: false, default: fragment("now()")
+      add :made_at, :utc_datetime_usec, null: false, default: fragment("now()")
 
       add :time_zone, :string, null: false
 

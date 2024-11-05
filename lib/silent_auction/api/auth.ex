@@ -1,6 +1,12 @@
 defmodule SilentAuction.Api.Auth do
   use Plug.Router
 
+  plug(Plug.Parsers,
+    parsers: [:urlencoded, :multipart, :json, Absinthe.Plug.Parser],
+    pass: ["application/json"],
+    json_decoder: Jason
+  )
+
   plug(:match)
   plug(:dispatch)
 
@@ -22,6 +28,8 @@ defmodule SilentAuction.Api.Auth do
   end
 
   defp parse_recipient(params) do
+    IO.inspect(params)
+
     case params do
       %{"phone" => phone} -> {:ok, {:phone, phone}}
       _ -> {:error, :identity_not_recognised}

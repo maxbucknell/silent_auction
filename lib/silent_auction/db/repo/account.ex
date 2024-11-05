@@ -6,14 +6,14 @@ defmodule SilentAuction.DB.Repo.Account do
   import Ecto.Query
 
   def retrieve_by_phone(phone) do
-    Repo.transaction(fn ->
+    Repo.transaction(fn repo ->
       account = load_by_phone(phone)
 
       if account != nil do
         {:ok, account}
       else
         colour =
-          Repo.one(
+          repo.one(
             from(c in Colour,
               where: is_nil(c.account_id),
               preload: [:account],
@@ -26,7 +26,7 @@ defmodule SilentAuction.DB.Repo.Account do
 
         changeset = Colour.changeset(colour, %{account: account})
 
-        {:ok, _} = Repo.update(changeset)
+        repo.update!(changeset)
       end
     end)
 
@@ -55,5 +55,17 @@ defmodule SilentAuction.DB.Repo.Account do
         preload: [colour: c]
       )
     )
+  end
+
+  def load_accounts_by_ids(ids) do
+    q =
+      from(a in Account,
+        where: a.id in ^ids,
+        preload: [:colour]
+      )
+
+    accounts = Repo.all(q)
+
+    Map.new(accounts, fn account -> {account.id, account} end)
   end
 end

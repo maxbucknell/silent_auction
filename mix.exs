@@ -27,13 +27,13 @@ defmodule SilentAuction.MixProject do
       {:tz, "~> 0.28.1"},
       {:bandit, "~> 1.5.7"},
       {:jason, "~> 1.4.4"},
-      {:absinthe, "~> 1.7.8"},
-      {:absinthe_plug, "~> 1.5.8"},
+      {:elixir_uuid, "~> 1.2.1"},
       {:ecto_sql, "~> 3.12.1"},
       {:postgrex, "~> 0.19.2"},
+      {:absinthe, "~> 1.7.8"},
+      {:absinthe_plug, "~> 1.5.8"},
       {:dataloader, "~> 2.0.1"},
-      {:guardian, "~> 2.3.2"},
-      {:elixir_uuid, "~> 1.2.1"}
+      {:guardian, "~> 2.3.2"}
     ]
   end
 
